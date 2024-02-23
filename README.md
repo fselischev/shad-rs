@@ -1,2 +1,2 @@
-# YSDA-rs
-Homeworks from Yandex School of Data Analysis Rust course
+# shad-rs
+Homeworks from Yandex School of Data Analysis (shad) Rust course
