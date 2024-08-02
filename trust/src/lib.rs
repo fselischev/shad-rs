@@ -72,8 +72,8 @@ pub trait Score {
 
 // just playing around with declarative macros to get rid off the boilerplate
 macro_rules! impl_score {
-    ($agent:ident) => {
-        impl Score for $agent {
+    ($($agent:ident),+) => {
+        $(impl Score for $agent {
             fn score(&self) -> i32 {
                 self.score
             }
@@ -81,9 +81,17 @@ macro_rules! impl_score {
             fn upd_score(&mut self, value: i32) {
                 self.score += value;
             }
-        }
+        })+
     };
 }
+
+impl_score!(
+    DetectiveAgent,
+    CopycatAgent,
+    GrudgerAgent,
+    CheatingAgent,
+    CooperatingAgent
+);
 
 #[derive(Default)]
 pub struct CheatingAgent {
@@ -96,7 +104,6 @@ impl CheatingAgent {
     }
 }
 
-impl_score!(CheatingAgent);
 impl Agent for CheatingAgent {}
 impl Action for CheatingAgent {
     fn last_play(&self) -> Play {
@@ -121,7 +128,6 @@ impl CooperatingAgent {
     }
 }
 
-impl_score!(CooperatingAgent);
 impl Agent for CooperatingAgent {}
 impl Action for CooperatingAgent {
     fn last_play(&self) -> Play {
@@ -149,7 +155,6 @@ impl GrudgerAgent {
     }
 }
 
-impl_score!(GrudgerAgent);
 impl Agent for GrudgerAgent {}
 impl Action for GrudgerAgent {
     fn last_play(&self) -> Play {
@@ -185,7 +190,6 @@ impl CopycatAgent {
     }
 }
 
-impl_score!(CopycatAgent);
 impl Agent for CopycatAgent {}
 impl Action for CopycatAgent {
     fn last_play(&self) -> Play {
@@ -220,7 +224,6 @@ impl DetectiveAgent {
     }
 }
 
-impl_score!(DetectiveAgent);
 impl Agent for DetectiveAgent {}
 impl Action for DetectiveAgent {
     fn last_play(&self) -> Play {
