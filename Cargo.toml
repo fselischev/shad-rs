@@ -4,7 +4,6 @@ members = [
     "add",
     "comm",
     "perc",
-    "paperio",
     "ini",
     "polka",
     "trust",
@@ -18,10 +17,5 @@ members = [
     "orm",
     "pargrep",
     "tcp_proxy",
-
-    # Tools
-    "tools/submit",
-    "paperio/tools/wasm-launcher",
-    "chip8/tools/console-runner",
 ]
 resolver = "2"

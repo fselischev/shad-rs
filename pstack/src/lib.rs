@@ -2,108 +2,105 @@
 
 use std::rc::Rc;
 
-// Define a reference-counted node for the stack
+// compose::begin_private(no_hint)
+////////////////////////////////////////////////////////////////////////////////
+
 struct Node<T> {
-    value: T,
+    value: Rc<T>,
     next: Option<Rc<Node<T>>>,
 }
 
-pub struct PRef<T> {
-    node: Rc<Node<T>>,
-}
-
-impl<T> std::ops::Deref for PRef<T> {
-    type Target = T;
-
-    fn deref(&self) -> &T {
-        &self.node.value
-    }
-}
+// compose::end_private
+////////////////////////////////////////////////////////////////////////////////
 
 pub struct PStack<T> {
+    // compose::begin_private
     head: Option<Rc<Node<T>>>,
-    size: usize,
+    len: usize,
+    // compose::end_private
 }
 
 impl<T> Default for PStack<T> {
     fn default() -> Self {
-        PStack::new()
+        Self { head: None, len: 0 } // compose::private(unimplemented)
     }
 }
 
 impl<T> Clone for PStack<T> {
     fn clone(&self) -> Self {
-        PStack {
+        // compose::begin_private(unimplemented)
+        Self {
             head: self.head.clone(),
-            size: self.size,
+            len: self.len,
         }
+        // compose::end_private
     }
 }
 
 impl<T> PStack<T> {
     pub fn new() -> Self {
-        PStack {
-            head: None,
-            size: 0,
-        }
+        Self::default() // compose::private(unimplemented)
     }
 
     pub fn push(&self, value: T) -> Self {
-        let new_node = Rc::new(Node {
-            value,
-            next: self.head.clone(),
-        });
-
-        PStack {
-            head: Some(new_node),
-            size: self.size + 1,
+        // compose::begin_private(unimplemented)
+        Self {
+            head: Some(Rc::new(Node {
+                value: Rc::new(value),
+                next: self.head.clone(),
+            })),
+            len: self.len + 1,
         }
+        // compose::end_private
     }
 
-    pub fn pop(&self) -> Option<(PRef<T>, Self)> {
-        match self.head {
-            Some(ref head) => {
-                let new_head = head.next.clone();
-                let popped = PRef { node: head.clone() };
-                Some((
-                    popped,
-                    PStack {
-                        head: new_head,
-                        size: self.size - 1,
-                    },
-                ))
-            }
-            None => None,
-        }
+    pub fn pop(&self) -> Option<(Rc<T>, Self)> {
+        // compose::begin_private(unimplemented)
+        self.head.as_ref().map(|node| {
+            (
+                Rc::clone(&node.value),
+                Self {
+                    head: node.next.clone(),
+                    len: self.len - 1,
+                },
+            )
+        })
+        // compose::end_private
     }
 
     pub fn len(&self) -> usize {
-        self.size
+        self.len // compose::private(unimplemented)
     }
 
     pub fn is_empty(&self) -> bool {
-        self.size == 0
+        self.len == 0 // compose::private(unimplemented)
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = PRef<T>> {
-        Iter {
-            current: self.head.clone(),
+    pub fn iter(&self) -> impl Iterator<Item = Rc<T>> {
+        // compose::begin_private(unimplemented)
+        PStackIter {
+            next: self.head.clone(),
+        }
+        // compose::end_private
+    }
+}
+
+// compose::begin_private(no_hint)
+pub struct PStackIter<T> {
+    next: Option<Rc<Node<T>>>,
+}
+
+impl<T> Iterator for PStackIter<T> {
+    type Item = Rc<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = self.next.take();
+        if let Some(node) = next {
+            self.next = node.next.clone();
+            Some(Rc::clone(&node.value))
+        } else {
+            None
         }
     }
 }
-
-struct Iter<T> {
-    current: Option<Rc<Node<T>>>,
-}
-
-impl<T> Iterator for Iter<T> {
-    type Item = PRef<T>;
-
-    fn next(&mut self) -> Option<PRef<T>> {
-        if let Some(node) = self.current.clone() {
-            self.current = node.next.clone();
-            return Some(PRef { node: node.clone() });
-        }
-        None
-    }
-}
+// compose::end_private
